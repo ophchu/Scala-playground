@@ -6,8 +6,6 @@ package helloworld
  * @since 8/1/13, 14:26
  */
 
-object HelloWorld {
-  def main(args: Array[String]) {
-    println("Hello World!")
-  }
+object HelloWorld  extends App {
+ println("Hello World")
 }
