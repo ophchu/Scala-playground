@@ -8,3 +8,4 @@ project/target
 # sbt specific
 target/
 
+src/test/resources/out/
