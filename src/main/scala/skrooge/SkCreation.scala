@@ -2,7 +2,7 @@ package skrooge
 
 import java.io.PrintWriter
 
-import skrooge.SkClasses.{Category, EmptyCategory, SkOperation}
+import skrooge.SkClasses.{Category, EmptyCategory, SkCategories, SkOperation}
 
 import scala.util.Try
 
@@ -19,20 +19,10 @@ object SkCreation {
     writer.close()
   }
 
-  def loadCategoryMap(inPath: String) = {
-    val catSource = io.Source.fromFile(inPath)
 
-    val catList = catSource.getLines().toList.tail.map(line => {
-      val fields = line.split(",")
-      fields(0) -> Category(fields(1), Try(fields(2)).getOrElse("אחר"))
-    }
-    )
-    catSource.close()
-    catList.toMap
-  }
 
-  def readAndUpdate(inPath: String, catPath: String): List[SkOperation] = {
-    val categories = loadCategoryMap(catPath)
+  def readAndUpdate(inPath: String, catPath: String, catOutPath: String): List[SkOperation] = {
+    val categories = SkCategories(catPath, catOutPath)
 
     def readAndUpdate(inList: List[String], account: String): List[SkOperation] = {
       inList match {
@@ -47,7 +37,7 @@ object SkCreation {
               SkOperation(
                 account,
                 fields(1),
-                categories.getOrElse(fields(1), EmptyCategory),
+                categories.getOrCreate(fields(1)),
                 fields(0),
                 "Credit Card",
                 "",
