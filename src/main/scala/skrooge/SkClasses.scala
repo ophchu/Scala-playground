@@ -1,30 +1,57 @@
 package skrooge
 
 import java.io.PrintWriter
+import java.nio.file.{Files, Paths}
+import java.time.{LocalDate, LocalDateTime}
 
+import scala.io.StdIn
 import scala.util.Try
-import scala.io.StdIn.readLine
 
 
 object SkClasses {
 
 
-  case class SkCategories(inPath: String, outPath: String) {
-    var catMap = loadCategoryMap(inPath)
-
-    def getOrCreate(name: String): Category= {
-      catMap.getOrElse(name, {
-          println(s"For name: $name we don't have category.")
-          val cat = readLine("Category: ")
-          val subcat = readLine("Sub Category: ")
-          val category = Category(cat, subcat)
-          catMap = catMap + (name -> category)
-          category
-        })
+  case class SkCategories(inPath: String = "") {
+    var catMap = inPath match {
+      case "" => Map.empty[String, Category]
+      case _ => loadCategoryMap(inPath)
     }
 
-    def saveResults(outPath: String) = {
-      val writer = new PrintWriter(outPath)
+
+    def getOrCreate(name: String): Category = {
+      catMap.getOrElse(name, {
+        val updatedCat = updateEmptyCat(name)
+        catMap = catMap + (name -> updatedCat)
+        updatedCat
+      })
+
+    }
+
+    def updateEmptyCat(name: String) = {
+      val catList = uniqueIndexedCategoryList()
+      println(catList.mkString("\n"))
+      println(s"For [$name] \nChoose category.")
+      println("For new category: Category, Sub category")
+      println()
+
+      val lineArr = StdIn.readLine().split(",")
+
+      val cat = if (lineArr.size == 1){
+        catList.find(cat => cat._2 == lineArr(0).toInt).get._1
+      }else{
+        Category(lineArr(0), lineArr(1))
+      }
+
+      println(s"Chossed category: $cat")
+      cat
+    }
+
+    def saveResults() = {
+      val inPathPath = Paths.get(inPath)
+      val ldt = LocalDateTime.now
+      Files.move(inPathPath, Paths.get(s"${inPath}_${ldt.toString}"))
+
+      val writer = new PrintWriter(inPath)
 
 
       writer.println("name,category,sub category")
@@ -47,10 +74,21 @@ object SkClasses {
     }
 
 
+    override def toString: String = {
+      catMap.mkString("\n")
+    }
+
+    def uniqueIndexedCategoryList() = {
+      catMap
+        .values
+        .toList.distinct.sortBy(cat => (cat.category, cat.subCategory)).zipWithIndex
+    }
   }
 
   case class Category(category: String, subCategory: String) {
     def toCat = s"$category > $subCategory"
+
+    override def toString: String = s"[$category] --> [$subCategory]"
   }
 
   object EmptyCategory extends Category("אחר", "אחר")

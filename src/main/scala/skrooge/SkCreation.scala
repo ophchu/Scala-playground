@@ -9,6 +9,12 @@ import scala.util.Try
 object SkCreation {
 
 
+  def saveNonCatItems(outPath: String, values: List[SkOperation]) = {
+      val writer = new PrintWriter(outPath)
+
+
+  }
+
   def saveResults(outPath: String, values: List[SkOperation]) = {
     val writer = new PrintWriter(outPath)
 
@@ -21,8 +27,8 @@ object SkCreation {
 
 
 
-  def readAndUpdate(inPath: String, catPath: String, catOutPath: String): List[SkOperation] = {
-    val categories = SkCategories(catPath, catOutPath)
+  def readAndUpdate(inPath: String, catPath: String): List[SkOperation] = {
+    val categories = SkCategories(catPath)
 
     def readAndUpdate(inList: List[String], account: String): List[SkOperation] = {
       inList match {
@@ -57,6 +63,7 @@ object SkCreation {
     val inSource = io.Source.fromFile(inPath)
     val res = readAndUpdate(inSource.getLines().toList, "None")
     inSource.close()
+    categories.saveResults()
     res
   }
 }
