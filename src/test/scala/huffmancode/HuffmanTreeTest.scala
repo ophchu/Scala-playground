@@ -7,9 +7,10 @@ class HuffmanTreeTest extends FunSpec
 
   describe("huffman code tree"){
     describe("Tree should be built right"){
-      val ht = HuffmanTree.createFullHTree("mississippi".iterator)
+      val ht = HuffmanTree.createFullHTree("aaaabbc".iterator)
       println(ht)
     }
+
     describe("Ordering should be reversed"){
       it("Should order things from small to big"){
         val hcList = List (
