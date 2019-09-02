@@ -1,53 +1,30 @@
 package finance.isra
 
-import java.io.PrintWriter
+import java.io.{File, PrintWriter}
 import java.util.Scanner
 
-sealed trait Category
+import finance.isra.Category.Category
 
-case object Car extends Category
+object Category extends Enumeration {
+  type Category = Value
+  val Food = Value(0)
+  val Home = Value(1)
+  val Children = Value(2)
+  val Recreation = Value(3)
+  val Health = Value(4)
+  val Communication = Value(5)
+  val Car = Value(6)
+  val Work = Value(7)
+  val Bank = Value(8)
+  val Else = Value(9)
 
-case object Food extends Category
-
-case object Home extends Category
-
-case object Children extends Category
-
-case object Recreation extends Category
-
-case object Communication extends Category
-
-case object Work extends Category
-
-case object Bank extends Category
-
-case object Else extends Category
-
-
-trait CategoryList {
-  def resolveCategory(catStr: String): Category =
-    catStr.trim.toLowerCase match {
-      case "car" => Car
-      case "food" => Food
-      case "home" => Home
-      case "children" => Children
-      case "recreation" => Recreation
-      case "communication" => Communication
-      case "work" => Work
-      case "bank" => Bank
-      case "else" => Else
-    }
-  val categoryList = List(
-    Car, Food, Home, Children, Recreation, Communication, Work, Bank, Else
-  )
-  val categoryString =
-    "\n" +
-    "*"*20 + "\n" +
-      categoryList.zipWithIndex.map(x => s"${x._2} --> ${x._1}").mkString("\n") + "\n" +
-      "*"*20 + "\n"
+  override def toString(): String = {
+    Category.values.map(cat => s"${cat.id} --> $cat").mkString("\n")
+  }
 }
 
-case class CategoryMap(inPath: String = null) extends CategoryList {
+
+case class CategoryMap(inPath: String = null) {
   var catMap = readCatList(inPath)
 
   def getCategory(desc: String): Category = {
@@ -56,17 +33,22 @@ case class CategoryMap(inPath: String = null) extends CategoryList {
 
   private def readCategory(desc: String): Category = {
     val scanner = new Scanner(System.in)
-    println(s"""Categories:\n $categoryString""")
+    println(s"""Categories:\n${Category.toString()}""")
+    println()
     println(s"Description: $desc")
-    val nextInt = scanner.nextInt()
-    val cat = categoryList(nextInt)
+    var catId = scanner.nextInt()
+
+    while (catId < 0 || catId >= Category.maxId){
+      println(s"Category id should be between 0 to ${Category.maxId - 1}")
+      catId = scanner.nextInt()
+    }
+    val cat = Category(catId)
 
     catMap = catMap + (desc -> cat)
     cat
   }
 
   def writeList(outPath: String) = {
-
     val writer = new PrintWriter(outPath)
     catMap.foreach(entry => writer.println(s"""${entry._1}|||${entry._2}"""))
     writer.close()
@@ -77,18 +59,19 @@ case class CategoryMap(inPath: String = null) extends CategoryList {
     if (inPath == null) {
       Map.empty[String, Category]
     } else {
-      val inSource = io.Source.fromFile(inPath)
+      val inFile  = new File(inPath)
+      if (inFile.exists) {
+        val inSource = io.Source.fromFile(inPath)
 
-      val catRes = inSource.getLines.map(cat => {
-        val splitted = cat.split("\\|\\|\\|")
-        splitted(0) -> resolveCategory(splitted(1))
-      }).toMap
-      inSource.close()
-      catRes
+        val catRes = inSource.getLines.map(cat => {
+          val splitted = cat.split("\\|\\|\\|")
+          splitted(0) -> Category.withName(splitted(1))
+        }).toMap
+        inSource.close()
+        catRes
+      }else {
+        Map.empty[String, Category]
+      }
     }
   }
-}
-object Main extends App{
-  val catMap = CategoryMap()
-  println(catMap.getCategory("asdasd"))
 }

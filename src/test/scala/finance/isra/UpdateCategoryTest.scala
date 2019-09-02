@@ -36,16 +36,3 @@ class UpdateCategoryTest extends FunSpec
   }
 
 }
-object Main extends App{
-  val inFile = "/home/ophircohen/customers/personal/repos/Scala-playground/src/test/resources/in/Master-tmp.csv"
-  val catFile = "/home/ophircohen/customers/personal/repos/Scala-playground/src/test/resources/out/cat-list.out"
-  val transRes = UpdateCategory.readRawCsv(inFile).take(20)
-
-  val catMap = CategoryMap(catFile)
-  val updateTransRes = UpdateCategory.attacheCategory(transRes, catMap)
-
-  println(updateTransRes.mkString("\n"))
-
-  catMap.writeList(catFile)
-
-}
