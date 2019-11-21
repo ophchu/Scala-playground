@@ -9,7 +9,7 @@ class UpdateCategoryTest extends FunSpec
   describe("Update Category") {
     describe("attacheCategory should attache category"){
       it("sas"){
-        val transRes = UpdateCategory.readRawCsv(inFile)
+        val transRes = UpdateCategory.readRawCsv(inFile, "asda")
 
         transRes should have size 190
 
@@ -21,7 +21,7 @@ class UpdateCategoryTest extends FunSpec
     }
     describe("testReadRawCsv") {
       it("Should read file and return the right iterator") {
-        val transRes = UpdateCategory.readRawCsv(inFile)
+        val transRes = UpdateCategory.readRawCsv(inFile, "asdas")
 
         transRes.size shouldEqual 190
 

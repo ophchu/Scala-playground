@@ -4,12 +4,19 @@ import java.io.PrintWriter
 
 import finance.isra.Category.Category
 
-case class TnsEntry(date: String, description: String, subtotal: Double, account: String, category: Category)
+case class TnsEntry(
+                     date: String,
+                     description: String,
+                     total: Double,
+                     account: String,
+                     category: Category,
+                     month: String
+                   )
 
 
 object UpdateCategory {
 
-  def readRawCsv(inPath: String) = {
+  def readRawCsv(inPath: String, month: String) = {
     val inSource = io.Source.fromFile(inPath)
 
     val res = inSource.getLines.toList.tail
@@ -17,19 +24,26 @@ object UpdateCategory {
         .replace(""""""", "")
         .replace("?", "")
       ))
-      .map(e => TnsEntry(e(0), e(1), e(4).toDouble, e(8), null))
+      .map(e => TnsEntry(e(0), e(1), e(4).toDouble, e(8), null, month))
 
     inSource.close
     res
   }
 
   def attacheCategory(tnsList: List[TnsEntry], categoryMap: CategoryMap) = {
-    tnsList.map(tns => tns.copy(category = categoryMap.getCategory(tns.description)))
+    tnsList.zipWithIndex.map(tns => {
+      if (tns._2 % 10 == 0){
+        println(s"${tns._2} of ${tnsList.size}")
+        categoryMap.writeList
+      }
+
+      tns._1.copy(category = categoryMap.getCategory(tns._1.description, tns._1.total))
+    })
   }
 
   def writeOut(tnsList: List[TnsEntry], outPath: String) = {
     val writer = new PrintWriter(outPath)
-    writer.println(s""""Date","Description","Sum", "Account", "Category"""")
+    writer.println(s""""Date","Description","Total", "Account", "Category", "Month"""")
     tnsList.foreach(entry => writer.println(entry.toCSV()))
     writer.close()
   }

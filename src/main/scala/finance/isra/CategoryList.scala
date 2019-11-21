@@ -17,6 +17,7 @@ object Category extends Enumeration {
   val Work = Value(7)
   val Bank = Value(8)
   val Else = Value(9)
+  val Insurance = Value(10)
 
   override def toString(): String = {
     Category.values.map(cat => s"${cat.id} --> $cat").mkString("\n")
@@ -24,32 +25,37 @@ object Category extends Enumeration {
 }
 
 
-case class CategoryMap(inPath: String = null) {
-  var catMap = readCatList(inPath)
+case class CategoryMap(catPath: String = null) {
+  var catMap = readCatList(catPath)
 
-  def getCategory(desc: String): Category = {
-    catMap.getOrElse(desc, readCategory(desc))
+  def getCategory(desc: String, total: Double): Category = {
+    catMap.getOrElse(desc, readCategory(desc, total))
   }
 
-  private def readCategory(desc: String): Category = {
+  private def readCategory(desc: String, total: Double): Category = {
     val scanner = new Scanner(System.in)
+
+    println("-" * 30)
+    println(s"Description: $desc. Total: $total")
+    println("-" * 30)
     println(s"""Categories:\n${Category.toString()}""")
     println()
-    println(s"Description: $desc")
+
     var catId = scanner.nextInt()
 
-    while (catId < 0 || catId >= Category.maxId){
+    while (catId < 0 || catId >= Category.maxId) {
       println(s"Category id should be between 0 to ${Category.maxId - 1}")
       catId = scanner.nextInt()
     }
     val cat = Category(catId)
 
     catMap = catMap + (desc -> cat)
+    println(cat)
     cat
   }
 
-  def writeList(outPath: String) = {
-    val writer = new PrintWriter(outPath)
+  def writeList() = {
+    val writer = new PrintWriter(catPath)
     catMap.foreach(entry => writer.println(s"""${entry._1}|||${entry._2}"""))
     writer.close()
   }
@@ -59,7 +65,7 @@ case class CategoryMap(inPath: String = null) {
     if (inPath == null) {
       Map.empty[String, Category]
     } else {
-      val inFile  = new File(inPath)
+      val inFile = new File(inPath)
       if (inFile.exists) {
         val inSource = io.Source.fromFile(inPath)
 
@@ -69,7 +75,7 @@ case class CategoryMap(inPath: String = null) {
         }).toMap
         inSource.close()
         catRes
-      }else {
+      } else {
         Map.empty[String, Category]
       }
     }
